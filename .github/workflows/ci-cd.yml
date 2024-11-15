@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - master  # 仅 master 分支触发
+      - master  # 仅在 master 分支触发
   workflow_dispatch:  # 支持手动触发
 
 jobs:
@@ -15,45 +15,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: 设置 gradlew 权限
-#      - name: Set execution permissions for gradlew
-#        run: chmod +x gradlew
-
-      # Step 3: 设置 JDK 环境
+      # Step 2: 设置 JDK 环境（仅运行 Dockerfile 时无需，但保留可选）
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           java-version: 21
           distribution: 'temurin'
 
-      # Step 4: 安装 Docker Compose 并缓存
-      - name: Cache Docker Compose
-        id: cache-docker-compose
+      # 缓存 Gradle 缓存目录
+      - name: Cache Gradle dependencies
         uses: actions/cache@v3
         with:
-          path: /usr/local/bin/docker-compose
-          key: docker-compose-v2.29.2
-          restore-keys: docker-compose-
+          path: ~/.gradle/caches
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
 
       - name: Install Docker Compose (if not cached)
         if: steps.cache-docker-compose.outputs.cache-hit != 'true'
         run: |
           sudo curl -L "https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
-      # Step 4: 缓存 Gradle 缓存
-#      - name: Cache Gradle dependencies
-#        uses: actions/cache@v3
-#        with:
-#          path: ~/.gradle/caches
-#          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-#          restore-keys: |
-#            ${{ runner.os }}-gradle-
 
-      # Step 5: 构建项目
-#      - name: Build with Gradle
-#        run: ./gradlew clean build
-
-      # Step 6: Docker 登录
+      # Step 4: Docker 登录
       - name: Docker Login
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -61,13 +45,13 @@ jobs:
         run: |
           echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" crpi-1xu2w221z7lgelkx.cn-shenzhen.personal.cr.aliyuncs.com --password-stdin > /dev/null 2>&1
 
-      # Step 7: 构建并推送 Docker 镜像
+      # Step 5: 构建并推送 Docker 镜像
       - name: Build and Push Docker Image
         run: |
           docker-compose build
           docker-compose push
 
-      # Step 8: 使用 SSH 部署到服务器
+      # Step 6: 使用 SSH 部署到服务器
       - name: Deploy to server
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -77,5 +61,5 @@ jobs:
           port: 22
           script: |
             cd /root/gpt-chat-server
-            chmod +x deploy.sh  # 添加这一行确保 deploy.sh 有执行权限
+            chmod +x deploy.sh
             ./deploy.sh

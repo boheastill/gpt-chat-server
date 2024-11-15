@@ -8,27 +8,25 @@ ENV GRAALVM_HOME=/usr/lib/graalvm
 ENV PATH="$GRAALVM_HOME/bin:$PATH"
 ENV GRADLE_USER_HOME=/root/.gradle
 
-# 检查 native-image 工具，未安装则安装
-RUN java -version && native-image --version || gu install native-image
-
 # 复制 Gradle Wrapper 和项目配置文件
 COPY gradlew /app/gradlew
 COPY gradle /app/gradle
 COPY build.gradle.kts settings.gradle.kts /app/
 
 # 确保 Gradle Wrapper 可执行
-
 RUN chmod +x /app/gradlew
-# 构建时挂载 Gradle 缓存目录，避免重复下载分发包和依赖
+
+# 使用 Gradle 缓存依赖，防止每次重新下载
 RUN --mount=type=cache,target=/root/.gradle ./gradlew dependencies --no-daemon
 
-# 复制项目文件并构建
+# 复制项目代码（放在后面，减少变动影响缓存）
 COPY . /app
-# 再次确保 gradlew 可执行，防止被覆盖
+
+# 再次确保 gradlew 可执行
 RUN chmod +x /app/gradlew
-RUN  --mount=type=cache,target=/root/.gradle ./gradlew clean build --no-daemon --parallel
 
-
+# 构建项目
+RUN --mount=type=cache,target=/root/.gradle ./gradlew clean build --no-daemon --parallel
 
 # 第二阶段：运行时阶段
 FROM openjdk:23-slim
