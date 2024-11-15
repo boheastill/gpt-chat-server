@@ -1,0 +1,17 @@
+### 发送消息
+POST http://localhost:8091/chat/12345
+Content-Type: application/json
+
+{
+  "userMessage": "Hello, how are you?"
+}
+
+### 获取会话信息
+GET http://localhost:8091/chat/12345
+
+### 删除会话
+DELETE http://localhost:8091/chat/12345
+
+#翻译
+###
+GET http://localhost:8091/chat/test?input=Hello&token=hello
