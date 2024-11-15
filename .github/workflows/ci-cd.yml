@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - master  # 仅在 main 分支有变更时触发
+      - master  # 仅在 master 分支有变更时触发
   workflow_dispatch:  # 手动触发支持
 
 jobs:
@@ -15,29 +15,38 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: 设置 JDK 环境
+      # Step 2: 确保 gradlew 可执行
+      - name: Set execution permissions for gradlew
+        run: chmod +x gradlew
+
+      # Step 3: 设置 JDK 环境
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           java-version: 23
           distribution: 'temurin'
 
-      # Step 3: 清理并构建项目
+      # Step 4: 清理并构建项目
       - name: Build with Gradle
+        env:
+          JAVA_HOME: ${{ steps.setup-java.outputs.java-home }}
         run: ./gradlew clean build
 
-      # Step 4: Docker 登录阿里云镜像仓库
+      # Step 5: Docker 登录阿里云镜像仓库
       - name: Docker Login
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
-          echo "1234567a" | docker login --username=boheastill crpi-1xu2w221z7lgelkx.cn-shenzhen.personal.cr.aliyuncs.com --password-stdin
+          echo "$DOCKER_PASSWORD" | docker login --username="$DOCKER_USERNAME" crpi-1xu2w221z7lgelkx.cn-shenzhen.personal.cr.aliyuncs.com --password-stdin
 
-      # Step 5: 构建并推送 Docker 镜像
+      # Step 6: 构建并推送 Docker 镜像
       - name: Build and Push Docker Image
         run: |
           docker-compose build
           docker-compose push
 
-      # Step 6: 使用 SSH 部署到服务器
+      # Step 7: 使用 SSH 部署到服务器
       - name: Deploy to server
         uses: appleboy/ssh-action@v0.1.7
         with:
