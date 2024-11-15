@@ -26,27 +26,31 @@ jobs:
           java-version: 23
           distribution: 'temurin'
 
-      # Step 4: 清理并构建项目
+      # Step 4: 安装 Docker Compose
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
+      # Step 5: 清理并构建项目
       - name: Build with Gradle
-        env:
-          JAVA_HOME: ${{ steps.setup-java.outputs.java-home }}
         run: ./gradlew clean build
 
-      # Step 5: Docker 登录阿里云镜像仓库
+      # Step 6: Docker 登录阿里云镜像仓库
       - name: Docker Login
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
-          echo "$DOCKER_PASSWORD" | docker login --username="$DOCKER_USERNAME" crpi-1xu2w221z7lgelkx.cn-shenzhen.personal.cr.aliyuncs.com --password-stdin
+          echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" crpi-1xu2w221z7lgelkx.cn-shenzhen.personal.cr.aliyuncs.com --password-stdin
 
-      # Step 6: 构建并推送 Docker 镜像
+      # Step 7: 构建并推送 Docker 镜像
       - name: Build and Push Docker Image
         run: |
           docker-compose build
           docker-compose push
 
-      # Step 7: 使用 SSH 部署到服务器
+      # Step 8: 使用 SSH 部署到服务器
       - name: Deploy to server
         uses: appleboy/ssh-action@v0.1.7
         with:
