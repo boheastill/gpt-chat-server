@@ -26,20 +26,21 @@ jobs:
           java-version: 23
           distribution: 'temurin'
 
-      # Step 4: 安装 Docker Compose
+      # Step 4: 安装 Docker Compose 并缓存
       - name: Cache Docker Compose
+        id: cache-docker-compose
         uses: actions/cache@v3
         with:
           path: /usr/local/bin/docker-compose
-          key: docker-compose-${{ runner.os }}-${{ hashFiles('docker-compose-version') }}
-          restore-keys: |
-            docker-compose-${{ runner.os }}-
+          key: docker-compose-v2.29.2
+          restore-keys: docker-compose-
 
-      - name: Install Docker Compose if not cached
-        if: !steps.cache.outputs.cache-hit
+      - name: Install Docker Compose (if not cached)
+        if: steps.cache-docker-compose.outputs.cache-hit != 'true'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+
 
       # Step 5: 清理并构建项目
       - name: Build with Gradle
