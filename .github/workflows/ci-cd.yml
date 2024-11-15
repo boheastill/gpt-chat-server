@@ -27,7 +27,16 @@ jobs:
           distribution: 'temurin'
 
       # Step 4: 安装 Docker Compose
-      - name: Install Docker Compose
+      - name: Cache Docker Compose
+        uses: actions/cache@v3
+        with:
+          path: /usr/local/bin/docker-compose
+          key: docker-compose-${{ runner.os }}-${{ hashFiles('docker-compose-version') }}
+          restore-keys: |
+            docker-compose-${{ runner.os }}-
+
+      - name: Install Docker Compose if not cached
+        if: !steps.cache.outputs.cache-hit
         run: |
           sudo apt-get update
           sudo apt-get install -y docker-compose
@@ -42,7 +51,7 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
-          echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" crpi-1xu2w221z7lgelkx.cn-shenzhen.personal.cr.aliyuncs.com --password-stdin
+          echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" crpi-1xu2w221z7lgelkx.cn-shenzhen.personal.cr.aliyuncs.com --password-stdin --quiet
 
       # Step 7: 构建并推送 Docker 镜像
       - name: Build and Push Docker Image
