@@ -3,8 +3,8 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - master  # 仅在 master 分支有变更时触发
-  workflow_dispatch:  # 手动触发支持
+      - master  # 仅 master 分支触发
+  workflow_dispatch:  # 支持手动触发
 
 jobs:
   build-and-deploy:
@@ -15,15 +15,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: 确保 gradlew 可执行
-      - name: Set execution permissions for gradlew
-        run: chmod +x gradlew
+      # Step 2: 设置 gradlew 权限
+#      - name: Set execution permissions for gradlew
+#        run: chmod +x gradlew
 
       # Step 3: 设置 JDK 环境
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: 23
+          java-version: 21
           distribution: 'temurin'
 
       # Step 4: 安装 Docker Compose 并缓存
@@ -40,19 +40,26 @@ jobs:
         run: |
           sudo curl -L "https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
+      # Step 4: 缓存 Gradle 缓存
+#      - name: Cache Gradle dependencies
+#        uses: actions/cache@v3
+#        with:
+#          path: ~/.gradle/caches
+#          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+#          restore-keys: |
+#            ${{ runner.os }}-gradle-
 
+      # Step 5: 构建项目
+#      - name: Build with Gradle
+#        run: ./gradlew clean build
 
-      # Step 5: 清理并构建项目
-      - name: Build with Gradle
-        run: ./gradlew clean build
-
-      # Step 6: Docker 登录阿里云镜像仓库
+      # Step 6: Docker 登录
       - name: Docker Login
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
-          echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" crpi-1xu2w221z7lgelkx.cn-shenzhen.personal.cr.aliyuncs.com --password-stdin --quiet
+          echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" crpi-1xu2w221z7lgelkx.cn-shenzhen.personal.cr.aliyuncs.com --password-stdin > /dev/null 2>&1
 
       # Step 7: 构建并推送 Docker 镜像
       - name: Build and Push Docker Image
