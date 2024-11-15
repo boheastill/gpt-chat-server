@@ -60,4 +60,5 @@ jobs:
           port: 22
           script: |
             cd /root/gpt-chat-server
+            chmod +x deploy.sh  # 添加这一行确保 deploy.sh 有执行权限
             ./deploy.sh
