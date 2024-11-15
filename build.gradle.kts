@@ -20,6 +20,9 @@ configurations {
     compileOnly {
         extendsFrom(configurations.annotationProcessor.get())
     }
+    all {
+        exclude(group = "com.vaadin.external.google", module = "android-json")
+    }
 }
 
 repositories {
@@ -30,18 +33,18 @@ repositories {
 extra["springAiVersion"] = "1.0.0-M3"
 extra["springCloudVersion"] = "2023.0.3"
 
+
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web") {
-        exclude(group = "com.vaadin.external.google", module = "android-json")
-    }
+
+    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.springframework.ai:spring-ai-openai-spring-boot-starter")
-    implementation("org.springframework.cloud:spring-cloud-starter-consul-config")
-    implementation("org.springframework.cloud:spring-cloud-starter-consul-discovery")
+//    implementation("org.springframework.cloud:spring-cloud-starter-consul-config")
+//    implementation("org.springframework.cloud:spring-cloud-starter-consul-discovery")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")

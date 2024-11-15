@@ -1,0 +1,12 @@
+services:
+  gpt-chat-server:
+    image: crpi-1xu2w221z7lgelkx.cn-shenzhen.personal.cr.aliyuncs.com/bohea/gpt-server:latest # 指定镜像名称
+    build:
+      context: .
+      dockerfile: Dockerfile # 确保使用指定的 Dockerfile 构建
+    container_name: gpt-chat-server
+    restart: always
+    ports:
+      - "50000:50000" # 映射容器端口到主机
+    volumes:
+      - ./app:/app # 挂载代码目录到容器
