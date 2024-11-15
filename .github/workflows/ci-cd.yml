@@ -1,0 +1,50 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - master  # 仅在 main 分支有变更时触发
+  workflow_dispatch:  # 手动触发支持
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: 检出代码
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: 设置 JDK 环境
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: 23
+          distribution: 'temurin'
+
+      # Step 3: 清理并构建项目
+      - name: Build with Gradle
+        run: ./gradlew clean build
+
+      # Step 4: Docker 登录阿里云镜像仓库
+      - name: Docker Login
+        run: |
+          echo "1234567a" | docker login --username=boheastill crpi-1xu2w221z7lgelkx.cn-shenzhen.personal.cr.aliyuncs.com --password-stdin
+
+      # Step 5: 构建并推送 Docker 镜像
+      - name: Build and Push Docker Image
+        run: |
+          docker-compose build
+          docker-compose push
+
+      # Step 6: 使用 SSH 部署到服务器
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          script: |
+            cd /root/gpt-chat-server
+            ./deploy.sh
