@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/chat")
+@RequestMapping("/gpt-chat-server/chat")
 class ChatController @Autowired constructor(
     private val multiChatManager: MultiChatManager
 ) {
