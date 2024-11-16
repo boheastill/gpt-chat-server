@@ -15,4 +15,4 @@ DELETE http://localhost:8091/chat/12345
 #翻译
 ###
 
-GET http://97.64.28.22:50000/chat/test?input=Hello&token=hello
+GET http://97.64.28.22:50000/gpt-chat-server/chat/test?input=代码写累了，明天周日可以做什么&token=hello
