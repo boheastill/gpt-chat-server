@@ -1,0 +1,26 @@
+server:
+  port: 50000
+spring:
+  #  profiles:
+  #    active: dev
+  application:
+    name: gpt-chat-server
+  ai:
+    openai:
+      api-key: '这里填openai的key即可运行'
+    chat:
+      client:
+        enabled: true
+#  cloud:
+#    consul:
+#      port: 8500
+#      discovery:
+#        instance-id: "${spring.application.name}-${server.port}-${random.value}"
+#        enabled: true  # 启用服务发现
+#        hostname: 10.10.21.58  # 当前服务注册到 Consul 的地址
+#      config:
+#        enabled: false
+#      import-check:
+#        enabled: false  # 禁用导入检查，避免启动时强制检查 Consul 配置
+#  config:
+#    import: "optional:consul:"  # 设置为可选，以防 Consul 不可用时启动失败
